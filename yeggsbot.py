@@ -1,4 +1,4 @@
-import telegram.ext
+from telegram.ext import (Updater, CommandHandler, MessageHandler, ConversationHandler, Filters)
 from telegram import ReplyKeyboardMarkup
 import json
 
@@ -6,25 +6,20 @@ contacts = {
         "name": "",
         "number": ""
         }
+
 SAVE, UPDATE, NAME, NUMBER, CONF = range(5)
-def kenneth():
-    return 72
-print(kenneth)
-with open("token.txt", "r") as f:
-    TOKEN = f.read().replace("\n", "")
 
 def start(update, context):
     reply_keyboard = [["save", "update"]]
     update.message.reply_text("Hello this is YEggs. Choose your gender",
             reply_markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard = False, input_field_placeholder = "None",)) 
     return NAME
-print(start)
+
 
 def add_name(update, context):
     user_in = update.message.text
     if user_in == "":
-
-    print(user_in)
+        print(user_in)
     update.message.reply_text(f"Enter name of contact. ")
     return NUMBER
     
@@ -57,8 +52,6 @@ def help(update, context):
     """)
 
 
-
-
 def save(key, user_in):
     contacts[key] = user_in
 
@@ -83,25 +76,22 @@ def update_database(c):
     write_json(data)
     print("saved")
 
+with open("token.txt", "r") as f:
+    TOKEN = f.read().replace("\n", "")
 
-updater = telegram.ext.Updater(TOKEN, use_context=True)
+
+updater = Updater(TOKEN, use_context=True)
 disp = updater.dispatcher
-convHandler = telegram.ext.ConversationHandler(entry_points = [telegram.ext.CommandHandler("start", start)],
+convHandler = ConversationHandler(entry_points = [CommandHandler("start", start)],
         states = {
-            NAME : [telegram.ext.MessageHandler(telegram.ext.Filters.text, add_name)],
-            NUMBER : [telegram.ext.MessageHandler(telegram.ext.Filters.text, add_number)],
-            SAVE : [telegram.ext.MessageHandler(telegram.ext.Filters.text, conf_message)]
+            NAME : [MessageHandler(Filters.text, add_name)],
+            NUMBER : [MessageHandler(Filters.text, add_number)],
+            SAVE : [MessageHandler(Filters.text, conf_message)]
             },
-        fallbacks=[telegram.ext.CommandHandler("help", help)]
+        fallbacks=[CommandHandler("help", help)]
         )
 
 disp.add_handler(convHandler)
-disp.add_handler(telegram.ext.CommandHandler("start", start))
-disp.add_handler(telegram.ext.CommandHandler("help", help))
-#disp.add_handler(telegram.ext.CommandHandler("contact", contact))
-#disp.add_handler(telegram.ext.CommandHandler("add_person", add_person))
-#disp.add_handler(telegram.ext.MessageHandler(telegram.ext.Filters.text, save_name))
-
 updater.start_polling()
 updater.idle()
 
