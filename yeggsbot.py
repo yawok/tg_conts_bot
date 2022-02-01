@@ -62,6 +62,8 @@ def update(update, context):
 def contVar(update, context):
     """Select contact variable(name, number) to edit."""
     user_in = update.message.text
+    global old_data
+    old_data = user_in.split(" ")[0]
     contacts["name"], contacts["number"]= user_in.split(" ")[0], user_in.split(" ")[2]
     reply_keyboard = [["name", "number"]]
 
@@ -147,11 +149,12 @@ def update_database(c):
     with open("contacts_info.json") as json_file:
         data = json.load(json_file)
         temp = data["contacts"]
+        print(c)
         for idx, obj in enumerate(temp):
-            if c["name"] == obj["name"]:
+            if old_data == obj["name"]:
                 print(temp[idx]["name"])
-                temp[idx]["name"] = c["name"]
-                print(temp[idx]["name"])
+                data["contacts"][idx] = c
+                print(temp[idx][changing_var])
                 print(temp)
                 break
     print(temp)
