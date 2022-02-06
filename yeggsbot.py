@@ -1,6 +1,8 @@
 from telegram.ext import (Updater, CommandHandler, MessageHandler, ConversationHandler, Filters)
-from telegram import ReplyKeyboardMarkup
+from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove as rm
 import json
+
+__author__ = "yaw.o.k"
 
 ##callback functions
 contacts = {
@@ -8,13 +10,12 @@ contacts = {
         "number": ""
         }
 changing_var = None
-INIT, NAME, NUMBER, SAVE, CONT_VAR, EDIT, UPDATE= range(7)
-
-
+INIT, NAME, NUMBER, SAVE, CONT_VAR, EDIT, UPDATE= range(7) 
 def start(update, context):
-    """Password collection to start conversation."""
+    """Password request."""
     update.message.reply_text("Enter password.")
     return INIT
+
 
 def init(update, context):
     """Starting message for bot conversation."""
@@ -28,7 +29,7 @@ def add_name(update, context):
     """Collect name of new contact."""
     user_in = update.message.text
     print(user_in)
-    update.message.reply_text(f"Enter name of contact. ")
+    update.message.reply_text(f"Enter name of contact. ", reply_markup = rm())
     return NUMBER
     
 
@@ -43,7 +44,6 @@ def add_number(update, context):
 
 
 #editing contact
-
 def update(update, context):
     """Showing user, contacts available for editing."""
     user_in = update.message.text
@@ -77,7 +77,7 @@ def edit(update, context):
     global changing_var
     changing_var = update.message.text
     print(changing_var)
-    update.message.reply_text(f"Enter a new {changing_var} for {contacts['name']}.")
+    update.message.reply_text(f"Enter a new {changing_var} for {contacts['name']}.", reply_markup = rm())
     return UPDATE
 
 
@@ -88,7 +88,13 @@ def conf_msg_1(update, context):
     update.message.reply_text(f"Saved {contacts['number']} with the name {contacts['name']} successfully.")
     print(contacts)
     save_to_database(contacts)
-    return INIT
+    update.message.text = 'password'
+
+    """Restarting message for bot conversation."""
+    reply_keyboard = [["save", "update"]]
+    update.message.reply_text("Would you like to add or update a contact?",
+            reply_markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard = False, input_field_placeholder = "None",)) 
+    return NAME
 
 
 def conf_msg_2(update, context):
@@ -102,7 +108,13 @@ def conf_msg_2(update, context):
     update.message.reply_text(f"Saved {contacts['number']} with the name {contacts['name']} successfully.")
     print(contacts)
     update_database(contacts)
-    return INIT
+    update.message.text = 'password'
+
+    """Restarting message for bot conversation."""
+    reply_keyboard = [["save", "update"]]
+    update.message.reply_text("Would you like to add or update a contact?",
+            reply_markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard = False, input_field_placeholder = "None",)) 
+    return NAME
  
 
 def help(update, context):
@@ -114,7 +126,7 @@ def help(update, context):
     /contact --> Show bot creator's contacts
     /help --> Show helpful message
 
-    """)
+    """, reply_markup = rm())
 
 #background functions
 def save(key, user_in):
@@ -163,6 +175,8 @@ def update_database(c):
     write_json(data)
     print("updated")
 
+
+
 def main():
     with open("token.txt", "r") as f:
         TOKEN = f.read().replace("\n", "")
@@ -187,6 +201,7 @@ def main():
     disp.add_handler(conv)
     updater.start_polling()
     updater.idle()
+
 
 if __name__ == '__main__':
     main()
